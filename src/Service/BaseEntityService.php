@@ -44,6 +44,7 @@ abstract class BaseEntityService implements IEntityService
     }
 
     /**
+     * @param TEntity|UuidInterface $entityId
      * @param TRequestBody $requestBody
      * @return TEntity
      */
