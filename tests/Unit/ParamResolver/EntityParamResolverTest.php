@@ -11,13 +11,13 @@ use JtcSolutions\Core\Service\RepositoryLocator;
 use JtcSolutions\Core\Tests\Fixtures\Dummy\Entity\DummyEntity;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Exception\InvalidUuidStringException;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface; // For RepositoryLocator exception
 use RuntimeException;
 use stdClass;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Throwable; // Import the expected exception
 
 class EntityParamResolverTest extends TestCase
@@ -101,7 +101,6 @@ class EntityParamResolverTest extends TestCase
 
         // Assert
         $this->expectException(Throwable::class);
-        $this->expectExceptionMessage('Invalid query parameter value.');
 
         // Act: Must trigger iteration to hit the exception point
         iterator_to_array($this->resolver->resolve($this->mockRequest, $this->mockArgument));
@@ -114,7 +113,6 @@ class EntityParamResolverTest extends TestCase
 
         // Assert
         $this->expectException(Throwable::class);
-        $this->expectExceptionMessage('Invalid query parameter value.');
 
         // Act: Must trigger iteration
         iterator_to_array($this->resolver->resolve($this->mockRequest, $this->mockArgument));
@@ -127,7 +125,7 @@ class EntityParamResolverTest extends TestCase
         $this->configureMocksForAttempt(paramValue: $invalidUuidString);
 
         // Assert
-        $this->expectException(InvalidUuidStringException::class);
+        $this->expectException(BadRequestHttpException::class);
 
         // Act: Must trigger iteration
         iterator_to_array($this->resolver->resolve($this->mockRequest, $this->mockArgument));

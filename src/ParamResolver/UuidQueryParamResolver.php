@@ -10,10 +10,23 @@ use Symfony\Component\HttpKernel\Controller\ValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
+/**
+ * Resolves controller action arguments that are type-hinted with UuidInterface.
+ * It reads a query parameter whose name matches the argument name and attempts
+ * to convert its value into a UuidInterface object.
+ * Handles nullable arguments and default values.
+ */
 class UuidQueryParamResolver implements ValueResolverInterface
 {
     /**
-     * @return iterable<UuidInterface|null>
+     * Attempts to resolve a controller argument type-hinted with UuidInterface from a query parameter.
+     *
+     * @param Request $request The current request object.
+     * @param ArgumentMetadata $argument Metadata about the controller argument being resolved.
+     * @return iterable<UuidInterface|null> An iterable containing the resolved UuidInterface object, null (if allowed), or empty if not applicable.
+     * @throws BadRequestHttpException If the query parameter value exists but is not a string,
+     *                                 or if the value is not a valid UUID string,
+     *                                 or if a non-string default value is provided for the argument.
      */
     public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
@@ -26,7 +39,7 @@ class UuidQueryParamResolver implements ValueResolverInterface
 
         if ($parameterValue !== null && ! is_string($parameterValue)) {
             throw new BadRequestHttpException(
-                sprintf('Query parameter "%s" must be a string UUID.', $parameterName),
+                sprintf('Query parameter "%s" must be a string UUID, received type "%s".', $parameterName, gettype($parameterValue)),
             );
         }
 
