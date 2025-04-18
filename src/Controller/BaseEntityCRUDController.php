@@ -6,6 +6,7 @@ use JtcSolutions\Core\Dto\IEntityRequestBody;
 use JtcSolutions\Core\Entity\IEntity;
 use JtcSolutions\Core\Service\IEntityService;
 use Psr\Log\LoggerInterface;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -25,6 +26,36 @@ abstract class BaseEntityCRUDController extends BaseController
         protected readonly IEntityService $service,
         protected readonly LoggerInterface $logger,
     ) {
+    }
+
+    /**
+     * @param TRequestBody $requestBody
+     * @param string[] $serializerGroups
+     */
+    public function handleUpdate(
+        UuidInterface $id,
+        IEntityRequestBody $requestBody,
+        array $serializerGroups = [],
+    ): JsonResponse {
+        $result = $this->validate($requestBody);
+        if ($result !== null) {
+            return $result;
+        }
+
+        /** @var TEntity $entity */
+        $entity = $this->service->handleUpdate($id, $requestBody);
+
+        return $this->json($entity, Response::HTTP_OK, [], ['groups' => $serializerGroups]);
+    }
+
+    /**
+     * @param UuidInterface|TEntity $id
+     */
+    public function handleDelete(UuidInterface|IEntity $id): JsonResponse
+    {
+        $this->service->handleDelete($id);
+
+        return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
     /**

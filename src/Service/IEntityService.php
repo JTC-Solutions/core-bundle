@@ -24,5 +24,8 @@ interface IEntityService
      */
     public function handleUpdate(UuidInterface $entityId, IEntityRequestBody $requestBody): IEntity;
 
+    /**
+     * @param TEntity|UuidInterface $entityId
+     */
     public function handleDelete(UuidInterface|IEntity $entityId): void;
 }
