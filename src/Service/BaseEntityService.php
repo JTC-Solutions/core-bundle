@@ -159,6 +159,7 @@ abstract class BaseEntityService implements IEntityService
     abstract protected function mapDataAndCallCreate(IEntityRequestBody $requestBody): IEntity;
 
     /**
+     * @param TEntity|UuidInterface $entityId
      * @param TRequestBody $requestBody
      * @return TEntity
      */
