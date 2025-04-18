@@ -1,0 +1,17 @@
+jtc_solutions_core:
+
+  param_resolvers:
+    uuid_resolver:
+      enable: true
+    entity_resolver:
+      enable: true
+
+  listeners:
+    exception_listener:
+      enable: true
+      translation_domain: 'exceptions'
+
+  open_api:
+    property_describers:
+      uuid_interface_property_describer:
+        enable: true

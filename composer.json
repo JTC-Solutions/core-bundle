@@ -1,0 +1,47 @@
+{
+    "name": "jtc-solutions/core",
+    "description": "Core bundle for every application in JTC that follows standard processes.",
+    "type": "symfony-bundle",
+    "autoload": {
+        "psr-4": {
+            "JtcSolutions\\Core\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "JtcSolutions\\Core\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "David Jungman",
+            "email": "david@jtc-solutions.cz"
+        }
+    ],
+    "require": {
+        "php": ">=8.3",
+        "symfony/framework-bundle": "7.2.*",
+        "symfony/validator": "^7.2",
+        "symfony/serializer": "^7.2",
+        "symfony/http-foundation": "^7.2",
+        "ramsey/uuid": "^4.7",
+        "doctrine/orm": "^3.3",
+        "jtc-solutions/helpers": "^0.2.0",
+        "symfony/yaml": "^7.2",
+        "symfony/translation": "^7.2",
+        "symfony/property-info": "^7.2",
+        "nelmio/api-doc-bundle": "^5.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "phpstan/phpstan": "^2.1",
+        "grifart/phpstan-oneline": "^0.5.0",
+        "symplify/easy-coding-standard": "^12.1",
+        "slevomat/coding-standard": "^8.16"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

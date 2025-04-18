@@ -1,0 +1,141 @@
+name: Project CI
+
+on:
+  push:
+    branches:
+      - '*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true # cancels any currently running pipelines if
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.composer-cache.outputs.key }}
+      should-run-backend: ${{ steps.check-backend.outputs.changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Check changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v35
+
+      - name: Check if frontend files changed
+        id: check-frontend
+        run: |
+          if echo "${{ steps.changed-files.outputs.all_changed_files }}" | grep -q "frontend/"; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_pgsql, pgsql
+          tools: composer:v2
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "key=${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}" >> $GITHUB_OUTPUT
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ steps.composer-cache.outputs.key }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Validate Composer
+        run: composer validate --strict
+
+      - name: Cache vendor directory for jobs
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ github.sha }}-${{ hashFiles('composer.lock') }}
+  backend-static-analysis:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        tool: [ 'phpstan', 'ecs' ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, libxml, mbstring, zip
+          coverage: none
+
+      - name: Restore Composer cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ needs.setup.outputs.cache-key }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Restore vendor directory
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ github.sha }}-${{ hashFiles('composer.lock') }}
+
+      - name: Run ${{ matrix.tool }}
+        run: |
+          if [ "${{ matrix.tool }}" = "phpstan" ]; then
+            vendor/bin/phpstan analyse --ansi --error-format=github --configuration=phpstan.neon --no-progress
+          elif [ "${{ matrix.tool }}" = "ecs" ]; then
+            vendor/bin/ecs check --no-progress-bar
+          fi
+
+
+  backend-tests:
+    needs: [ setup, backend-static-analysis ]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          extensions: dom, simplexml
+          tools: composer:v2
+          coverage: none
+
+      - name: Restore Composer cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ needs.setup.outputs.cache-key }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Restore vendor directory
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ github.sha }}-${{ hashFiles('composer.lock') }}
+
+      - name: Run PHPUnit tests
+        run: |
+          php vendor/bin/phpunit --stop-on-failure
+
+
+

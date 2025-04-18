@@ -1,0 +1,22 @@
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
+parameters:
+    reportUnmatchedIgnoredErrors: false
+    tmpDir: var/phpstan
+    level: max
+    paths:
+        - src
+    checkExplicitMixed: true
+    parallel:
+        processTimeout: 120.0
+    excludePaths:
+        # symfony configuration is unfriendly with phpstan
+        - src/DependencyInjection/
+        - src/JtcSolutionsCoreBundle.php
+
+services:
+    errorFormatter.compact:
+        class: Grifart\PhpstanOneLine\CompactErrorFormatter
+        arguments:
+            format: "]8;;phpstorm://open/?file=___{absolutePath}&line={line}\\{path}:{line}]8;;\\\n ↳ {error}\n"
