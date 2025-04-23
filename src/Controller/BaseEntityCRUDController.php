@@ -38,14 +38,18 @@ abstract class BaseEntityCRUDController extends BaseController
     ) {
     }
 
-    /** @internal */
+    /**
+     * @internal
+     */
     #[Required]
     public function setValidator(ValidatorInterface $validator): void
     {
         $this->validator = $validator;
     }
 
-    /** @internal */
+    /**
+     * @internal
+     */
     #[Required]
     public function setLogger(LoggerInterface $logger): void
     {

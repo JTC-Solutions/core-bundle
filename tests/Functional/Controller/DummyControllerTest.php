@@ -37,13 +37,14 @@ class DummyControllerTest extends TestCase
         $this->serviceMock = $this->createMock(DummyEntityService::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
 
-        $this->controller = new DummyController(
-            $this->validatorMock,
-            $this->serviceMock,
-            $this->loggerMock,
-        );
-
         $container = new Container();
+
+
+        $this->controller = new DummyController(
+            $this->serviceMock,
+        );
+        $this->controller->setLogger($this->loggerMock);
+        $this->controller->setValidator($this->validatorMock);
         $this->controller->setContainer($container);
     }
 
