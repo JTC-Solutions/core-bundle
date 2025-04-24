@@ -5,12 +5,12 @@ namespace JtcSolutions\Core\Tests\Fixtures\Concrete;
 use JtcSolutions\Core\Dto\IEntityRequestBody;
 use JtcSolutions\Core\Entity\IEntity;
 use JtcSolutions\Core\Repository\IEntityRepository;
-use JtcSolutions\Core\Service\BaseEntityService;
+use JtcSolutions\Core\Service\BaseCRUDEntityService;
 use JtcSolutions\Core\Tests\Fixtures\Concrete\Entity\TestEntity;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
-class ConcreteTestEntityService extends BaseEntityService
+class ConcreteTestCRUDEntityService extends BaseCRUDEntityService
 {
     public function publicEnsureEntityDoesNotExist(array $params, ?UuidInterface $ignoredEntityId = null): void
     {

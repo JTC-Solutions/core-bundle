@@ -5,7 +5,7 @@ namespace JtcSolutions\Core\Tests\Functional\Controller;
 use JtcSolutions\Core\Tests\Fixtures\Dummy\Controller\DummyController;
 use JtcSolutions\Core\Tests\Fixtures\Dummy\Dto\DummyCreateRequest;
 use JtcSolutions\Core\Tests\Fixtures\Dummy\Entity\DummyEntity;
-use JtcSolutions\Core\Tests\Fixtures\Dummy\Service\DummyEntityService;
+use JtcSolutions\Core\Tests\Fixtures\Dummy\Service\DummyCRUDEntityService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -23,7 +23,7 @@ class DummyControllerTest extends TestCase
 
     private MockObject|ValidatorInterface $validatorMock;
 
-    private MockObject|DummyEntityService $serviceMock;
+    private MockObject|DummyCRUDEntityService $serviceMock;
 
     private MockObject|LoggerInterface $loggerMock;
 
@@ -34,7 +34,7 @@ class DummyControllerTest extends TestCase
         parent::setUp();
 
         $this->validatorMock = $this->createMock(ValidatorInterface::class);
-        $this->serviceMock = $this->createMock(DummyEntityService::class);
+        $this->serviceMock = $this->createMock(DummyCRUDEntityService::class);
         $this->loggerMock = $this->createMock(LoggerInterface::class);
 
         $container = new Container();
