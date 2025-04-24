@@ -3,7 +3,7 @@
 namespace JtcSolutions\Core\Dto;
 
 use JtcSolutions\Core\Controller\BaseEntityCRUDController;
-use JtcSolutions\Core\Service\BaseEntityService;
+use JtcSolutions\Core\Service\BaseCRUDEntityService;
 
 /**
  * Marker interface for Data Transfer Objects (DTOs) that represent the body
@@ -14,7 +14,7 @@ use JtcSolutions\Core\Service\BaseEntityService;
  * and services like those in BaseEntityCRUDController.
  *
  * @see BaseEntityCRUDController
- * @see BaseEntityService
+ * @see BaseCRUDEntityService
  */
 interface IEntityRequestBody
 {

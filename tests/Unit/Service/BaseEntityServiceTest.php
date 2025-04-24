@@ -9,7 +9,7 @@ use JtcSolutions\Core\Exception\EntityAlreadyExistsException;
 use JtcSolutions\Core\Exception\EntityNotFoundException;
 use JtcSolutions\Core\Exception\NestedEntityNotFoundException;
 use JtcSolutions\Core\Repository\IEntityRepository;
-use JtcSolutions\Core\Tests\Fixtures\Concrete\ConcreteTestEntityService;
+use JtcSolutions\Core\Tests\Fixtures\Concrete\ConcreteTestCRUDEntityService;
 use JtcSolutions\Core\Tests\Fixtures\Concrete\Dto\TestRequestBody;
 use JtcSolutions\Core\Tests\Fixtures\Concrete\Entity\TestEntity;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -26,7 +26,7 @@ class BaseEntityServiceTest extends TestCase
     private MockObject|LoggerInterface $loggerMock;
 
     // The concrete service instance used for testing base logic (ensure*, find*, update*)
-    private ConcreteTestEntityService $serviceInstance;
+    private ConcreteTestCRUDEntityService $serviceInstance;
 
     protected function setUp(): void
     {
@@ -41,7 +41,7 @@ class BaseEntityServiceTest extends TestCase
 
         // Create a real instance of the concrete service to test the base logic
         // This instance will have its dependencies mocked
-        $this->serviceInstance = new ConcreteTestEntityService(
+        $this->serviceInstance = new ConcreteTestCRUDEntityService(
             $this->repositoryMock,
             $this->loggerMock,
         );
@@ -58,7 +58,7 @@ class BaseEntityServiceTest extends TestCase
         $expectedEntity = new TestEntity(Uuid::uuid4()); // Dummy entity to be returned by mocked method
 
         // Create a mock of the *concrete* service, but *only* mock the protected method
-        $serviceMock = $this->getMockBuilder(ConcreteTestEntityService::class)
+        $serviceMock = $this->getMockBuilder(ConcreteTestCRUDEntityService::class)
             ->setConstructorArgs([$this->repositoryMock, $this->loggerMock])
             ->onlyMethods(['mapDataAndCallCreate']) // Mock only this protected method
             ->getMock();
@@ -83,7 +83,7 @@ class BaseEntityServiceTest extends TestCase
         $expectedEntity = new TestEntity($entityId); // Dummy entity to be returned
 
         // Create a mock of the *concrete* service, mocking only the protected method
-        $serviceMock = $this->getMockBuilder(ConcreteTestEntityService::class)
+        $serviceMock = $this->getMockBuilder(ConcreteTestCRUDEntityService::class)
             ->setConstructorArgs([$this->repositoryMock, $this->loggerMock])
             ->onlyMethods(['mapDataAndCallUpdate']) // Mock only this protected method
             ->getMock();
@@ -108,7 +108,7 @@ class BaseEntityServiceTest extends TestCase
         $entityId = Uuid::uuid4();
 
         // Create a mock of the *concrete* service, mocking only the protected method
-        $serviceMock = $this->getMockBuilder(ConcreteTestEntityService::class)
+        $serviceMock = $this->getMockBuilder(ConcreteTestCRUDEntityService::class)
             ->setConstructorArgs([$this->repositoryMock, $this->loggerMock])
             ->onlyMethods(['delete']) // Mock only this protected method
             ->getMock();
@@ -128,7 +128,7 @@ class BaseEntityServiceTest extends TestCase
         $entity = new TestEntity($entityId);
 
         // Create a mock of the *concrete* service, mocking only the protected method
-        $serviceMock = $this->getMockBuilder(ConcreteTestEntityService::class)
+        $serviceMock = $this->getMockBuilder(ConcreteTestCRUDEntityService::class)
             ->setConstructorArgs([$this->repositoryMock, $this->loggerMock])
             ->onlyMethods(['delete']) // Mock only this protected method
             ->getMock();
