@@ -2,6 +2,7 @@
     "name": "jtc-solutions/core",
     "description": "Core bundle for every application in JTC that follows standard processes.",
     "type": "symfony-bundle",
+    "license": "proprietary",
     "autoload": {
         "psr-4": {
             "JtcSolutions\\Core\\": "src/"
