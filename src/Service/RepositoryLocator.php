@@ -4,6 +4,7 @@ namespace JtcSolutions\Core\Service;
 
 use JtcSolutions\Core\Entity\IEntity;
 use JtcSolutions\Core\Repository\IEntityRepository;
+use JtcSolutions\Helpers\Helper\FQCNHelper;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
@@ -64,8 +65,7 @@ class RepositoryLocator
     {
         foreach ($this->repositories as $repository) {
             $entityFQCN = $repository->getEntityName();
-            $parts = explode('\\', $entityFQCN);
-            $shortName = end($parts);
+            $shortName = FQCNHelper::transformFQCNToShortClassName($entityFQCN);
 
             if ($shortName === $entityShortName) {
                 /** @var IEntityRepository<IEntity> $repository */
