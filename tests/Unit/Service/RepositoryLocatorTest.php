@@ -93,6 +93,86 @@ class RepositoryLocatorTest extends TestCase
     }
 
     /**
+     * Test that the locator finds and returns the correct repository
+     * when it exists in the provided iterable, using the entity's short name.
+     */
+    public function testLocateByShortNameFindsCorrectRepository(): void
+    {
+        // Arrange
+        $dummyEntityFqcn = DummyEntity::class;
+        $dummyEntityShortName = 'DummyEntity';
+        $anotherEntityFqcn = AnotherDummyEntity::class;
+
+        // Mock Repository 1 (Incorrect for this test's target)
+        $mockRepo1 = $this->createMock(IEntityRepository::class);
+        $mockRepo1->method('getEntityName')->willReturn($anotherEntityFqcn);
+
+        // Mock Repository 2 (Correct for this test's target)
+        $mockRepo2 = $this->createMock(IEntityRepository::class);
+        $mockRepo2->method('getEntityName')->willReturn($dummyEntityFqcn);
+
+        // The iterable simulates the collection injected by Symfony's AutowireIterator
+        $repositoriesIterable = [$mockRepo1, $mockRepo2];
+
+        $locator = new RepositoryLocator($repositoriesIterable);
+
+        // Act
+        /** @var IEntityRepository<DummyEntity> $foundRepository */
+        $foundRepository = $locator->locateByShortName($dummyEntityShortName);
+
+        // Assert
+        self::assertSame($mockRepo2, $foundRepository, 'Should have returned the second mock repository.');
+        self::assertEquals($dummyEntityFqcn, $foundRepository->getEntityName(), 'The found repository should handle the requested entity.');
+    }
+
+    /**
+     * Test that the locator throws a RuntimeException when no repository
+     * matches the requested entity short name.
+     */
+    public function testLocateByShortNameThrowsExceptionWhenNotFound(): void
+    {
+        // Arrange
+        $requestedEntityShortName = 'DummyEntity';
+        $otherEntityFqcn = AnotherDummyEntity::class;
+
+        // Mock repositories that DON'T handle the requested entity
+        $mockRepo1 = $this->createMock(IEntityRepository::class);
+        $mockRepo1->method('getEntityName')->willReturn($otherEntityFqcn);
+
+        $mockRepo2 = $this->createMock(IEntityRepository::class);
+        $mockRepo2->method('getEntityName')->willReturn('App\YetAnotherEntity');
+
+        $repositoriesIterable = [$mockRepo1, $mockRepo2];
+        $locator = new RepositoryLocator($repositoriesIterable);
+
+        // Assert
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Repository not found for entity short name: ' . $requestedEntityShortName);
+
+        // Act
+        $locator->locateByShortName($requestedEntityShortName);
+    }
+
+    /**
+     * Test that the locator throws a RuntimeException when the
+     * iterable provided during construction is empty, when using locateByShortName.
+     */
+    public function testLocateByShortNameThrowsExceptionWhenIterableIsEmpty(): void
+    {
+        // Arrange
+        $requestedEntityShortName = 'DummyEntity';
+        $repositoriesIterable = []; // Empty iterable
+        $locator = new RepositoryLocator($repositoriesIterable);
+
+        // Assert
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Repository not found for entity short name: ' . $requestedEntityShortName);
+
+        // Act
+        $locator->locateByShortName($requestedEntityShortName);
+    }
+
+    /**
      * Helper method to create mock IEntityRepository if needed elsewhere,
      * although direct creation in tests is often clearer.
      *
