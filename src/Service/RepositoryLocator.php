@@ -4,6 +4,7 @@ namespace JtcSolutions\Core\Service;
 
 use JtcSolutions\Core\Entity\IEntity;
 use JtcSolutions\Core\Repository\IEntityRepository;
+use JtcSolutions\Helpers\Helper\FQCNHelper;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
@@ -48,5 +49,30 @@ class RepositoryLocator
         }
 
         throw new RuntimeException('Repository not found for entity: ' . $entityFQCN);
+    }
+
+    /**
+     * Finds and returns the repository associated with the given entity short name.
+     *
+     * Iterates through the injected repositories and compares the short name (class name without namespace)
+     * of their managed entity with the provided short name.
+     *
+     * @param string $entityShortName The short name (without namespace) of the entity whose repository is needed.
+     * @return IEntityRepository<IEntity> The repository instance managing the specified entity.
+     * @throws RuntimeException If no repository is found for the given entity short name.
+     */
+    public function locateByShortName(string $entityShortName): IEntityRepository
+    {
+        foreach ($this->repositories as $repository) {
+            $entityFQCN = $repository->getEntityName();
+            $shortName = FQCNHelper::transformFQCNToShortClassName($entityFQCN);
+
+            if ($shortName === $entityShortName) {
+                /** @var IEntityRepository<IEntity> $repository */
+                return $repository;
+            }
+        }
+
+        throw new RuntimeException('Repository not found for entity short name: ' . $entityShortName);
     }
 }
