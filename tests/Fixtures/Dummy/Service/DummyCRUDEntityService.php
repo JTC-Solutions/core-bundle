@@ -9,7 +9,6 @@ use JtcSolutions\Core\Service\BaseCRUDEntityService;
 use JtcSolutions\Core\Tests\Fixtures\Dummy\Dto\DummyCreateRequest;
 use JtcSolutions\Core\Tests\Fixtures\Dummy\Entity\DummyEntity;
 use JtcSolutions\Core\Tests\Fixtures\Dummy\Repository\DummyRepository;
-use Psr\Log\LoggerInterface;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
@@ -18,22 +17,23 @@ class DummyCRUDEntityService extends BaseCRUDEntityService
 {
     public function __construct(
         DummyRepository $repository,
-        LoggerInterface $logger,
         protected readonly EntityManagerInterface $entityManager,
     ) {
-        parent::__construct($repository, $logger);
+        parent::__construct($repository);
     }
 
     public function create(
         string $string,
         int $integer,
         float $float,
+        string $contextString,
     ): DummyEntity {
         $entity = new DummyEntity(
             id: Uuid::uuid4(),
             string: $string,
             integer: $integer,
             float: $float,
+            contextString: $contextString,
         );
 
         $this->entityManager->persist($entity);
@@ -50,6 +50,7 @@ class DummyCRUDEntityService extends BaseCRUDEntityService
         string $string,
         int $integer,
         float $float,
+        string $contextString,
     ): DummyEntity {
         if (! $id instanceof DummyEntity) {
             $entity = $this->ensureEntityExists(['id' => $id]);
@@ -60,6 +61,7 @@ class DummyCRUDEntityService extends BaseCRUDEntityService
         $entity->setString($string);
         $entity->setFloat($float);
         $entity->setInteger($integer);
+        $entity->setContextString($contextString);
 
         $this->entityManager->flush();
 
@@ -68,8 +70,9 @@ class DummyCRUDEntityService extends BaseCRUDEntityService
 
     /**
      * @param DummyEntity|UuidInterface $id
+     * @param array<string, mixed> $context
      */
-    protected function delete(UuidInterface|IEntity $id): void
+    protected function delete(UuidInterface|IEntity $id, array $context = []): void
     {
         if ($id instanceof DummyEntity) {
             $id = $id->getId();
@@ -81,22 +84,30 @@ class DummyCRUDEntityService extends BaseCRUDEntityService
         $this->entityManager->flush();
     }
 
-    protected function mapDataAndCallUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody): IEntity
+    /**
+     * @param array<string, mixed> $context
+     */
+    protected function mapDataAndCallUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody, array $context = []): IEntity
     {
         return $this->update(
             id: $entityId,
             string: $requestBody->string,
             integer: $requestBody->integer,
             float: $requestBody->float,
+            contextString: $context['contextString'],
         );
     }
 
-    protected function mapDataAndCallCreate(IEntityRequestBody $requestBody): IEntity
+    /**
+     * @param array<string, mixed> $context
+     */
+    protected function mapDataAndCallCreate(IEntityRequestBody $requestBody, array $context = []): IEntity
     {
         return $this->create(
             string: $requestBody->string,
             integer: $requestBody->integer,
             float: $requestBody->float,
+            contextString: $context['contextString'],
         );
     }
 }

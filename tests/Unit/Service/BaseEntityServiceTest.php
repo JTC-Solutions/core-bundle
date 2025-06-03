@@ -56,6 +56,7 @@ class BaseEntityServiceTest extends TestCase
     {
         $requestBody = new TestRequestBody('create data');
         $expectedEntity = new TestEntity(Uuid::uuid4()); // Dummy entity to be returned by mocked method
+        $context = ['key' => 'value', 'test' => true];
 
         // Create a mock of the *concrete* service, but *only* mock the protected method
         $serviceMock = $this->getMockBuilder(ConcreteTestCRUDEntityService::class)
@@ -63,14 +64,14 @@ class BaseEntityServiceTest extends TestCase
             ->onlyMethods(['mapDataAndCallCreate']) // Mock only this protected method
             ->getMock();
 
-        // Expect 'mapDataAndCallCreate' to be called once with the request body
+        // Expect 'mapDataAndCallCreate' to be called once with the request body and context
         $serviceMock->expects(self::once())
             ->method('mapDataAndCallCreate')
-            ->with($requestBody)
+            ->with($requestBody, $context)
             ->willReturn($expectedEntity); // Define return value for the mocked method
 
-        // Call the public handleCreate method on the mocked service
-        $result = $serviceMock->handleCreate($requestBody);
+        // Call the public handleCreate method on the mocked service with context
+        $result = $serviceMock->handleCreate($requestBody, $context);
 
         // Assert that the result returned by handleCreate is the one from the mocked method
         self::assertSame($expectedEntity, $result);
@@ -81,6 +82,7 @@ class BaseEntityServiceTest extends TestCase
         $entityId = Uuid::uuid4();
         $requestBody = new TestRequestBody('update data');
         $expectedEntity = new TestEntity($entityId); // Dummy entity to be returned
+        $context = ['key' => 'value', 'test' => true];
 
         // Create a mock of the *concrete* service, mocking only the protected method
         $serviceMock = $this->getMockBuilder(ConcreteTestCRUDEntityService::class)
@@ -88,16 +90,16 @@ class BaseEntityServiceTest extends TestCase
             ->onlyMethods(['mapDataAndCallUpdate']) // Mock only this protected method
             ->getMock();
 
-        // Expect 'mapDataAndCallUpdate' to be called once with the correct ID and body
+        // Expect 'mapDataAndCallUpdate' to be called once with the correct ID, body, and context
         // Note: BaseEntityService calls mapDataAndCallUpdate with UuidInterface,
         // so we expect UuidInterface here, even if the concrete implementation allows IEntity.
         $serviceMock->expects(self::once())
             ->method('mapDataAndCallUpdate')
-            ->with($entityId, $requestBody) // Expecting UuidInterface and RequestBody
+            ->with($entityId, $requestBody, $context) // Expecting UuidInterface, RequestBody, and context
             ->willReturn($expectedEntity);
 
-        // Call the public handleUpdate method
-        $result = $serviceMock->handleUpdate($entityId, $requestBody);
+        // Call the public handleUpdate method with context
+        $result = $serviceMock->handleUpdate($entityId, $requestBody, $context);
 
         // Assert the result
         self::assertSame($expectedEntity, $result);
@@ -106,6 +108,7 @@ class BaseEntityServiceTest extends TestCase
     public function testHandleDeleteDelegatesToDeleteWithUuid(): void
     {
         $entityId = Uuid::uuid4();
+        $context = ['key' => 'value', 'test' => true];
 
         // Create a mock of the *concrete* service, mocking only the protected method
         $serviceMock = $this->getMockBuilder(ConcreteTestCRUDEntityService::class)
@@ -113,19 +116,20 @@ class BaseEntityServiceTest extends TestCase
             ->onlyMethods(['delete']) // Mock only this protected method
             ->getMock();
 
-        // Expect 'delete' to be called once with the UUID
+        // Expect 'delete' to be called once with the UUID and context
         $serviceMock->expects(self::once())
             ->method('delete')
-            ->with($entityId);
+            ->with($entityId, $context);
 
-        // Call the public handleDelete method
-        $serviceMock->handleDelete($entityId);
+        // Call the public handleDelete method with context
+        $serviceMock->handleDelete($entityId, $context);
     }
 
     public function testHandleDeleteDelegatesToDeleteWithEntity(): void
     {
         $entityId = Uuid::uuid4();
         $entity = new TestEntity($entityId);
+        $context = ['key' => 'value', 'test' => true];
 
         // Create a mock of the *concrete* service, mocking only the protected method
         $serviceMock = $this->getMockBuilder(ConcreteTestCRUDEntityService::class)
@@ -133,13 +137,13 @@ class BaseEntityServiceTest extends TestCase
             ->onlyMethods(['delete']) // Mock only this protected method
             ->getMock();
 
-        // Expect 'delete' to be called once with the Entity object
+        // Expect 'delete' to be called once with the Entity object and context
         $serviceMock->expects(self::once())
             ->method('delete')
-            ->with($entity);
+            ->with($entity, $context);
 
-        // Call the public handleDelete method
-        $serviceMock->handleDelete($entity);
+        // Call the public handleDelete method with context
+        $serviceMock->handleDelete($entity, $context);
     }
 
 

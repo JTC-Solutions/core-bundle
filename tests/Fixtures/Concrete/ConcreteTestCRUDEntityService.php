@@ -32,16 +32,25 @@ class ConcreteTestCRUDEntityService extends BaseCRUDEntityService
         parent::updateCollection($entities, $inputs, $addEntity, $removeEntity);
     }
 
-    protected function delete(UuidInterface|IEntity $id): void
+    /**
+     * @param array<string, mixed> $context
+     */
+    protected function delete(UuidInterface|IEntity $id, array $context = []): void
     {
     }
 
-    protected function mapDataAndCallCreate(IEntityRequestBody $requestBody): IEntity
+    /**
+     * @param array<string, mixed> $context
+     */
+    protected function mapDataAndCallCreate(IEntityRequestBody $requestBody, array $context = []): IEntity
     {
         return new TestEntity(Uuid::uuid4());
     }
 
-    protected function mapDataAndCallUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody): IEntity
+    /**
+     * @param array<string, mixed> $context
+     */
+    protected function mapDataAndCallUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody, array $context = []): IEntity
     {
         return new TestEntity($entityId);
     }

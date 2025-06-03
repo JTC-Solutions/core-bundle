@@ -15,16 +15,20 @@ class DummyEntity implements IEntity
 
     public float $float;
 
+    public string $contextString;
+
     public function __construct(
         UuidInterface $id,
         string $string,
         int $integer,
         float $float,
+        string $contextString,
     ) {
         $this->id = $id;
         $this->string = $string;
         $this->integer = $integer;
         $this->float = $float;
+        $this->contextString = $contextString;
     }
 
     public function getId(): UuidInterface
@@ -60,5 +64,15 @@ class DummyEntity implements IEntity
     public function setFloat(float $float): void
     {
         $this->float = $float;
+    }
+
+    public function getContextString(): string
+    {
+        return $this->contextString;
+    }
+
+    public function setContextString(string $contextString): void
+    {
+        $this->contextString = $contextString;
     }
 }
