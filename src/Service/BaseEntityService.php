@@ -169,7 +169,9 @@ abstract class BaseEntityService
      * );
      * ```
      *
-     * @param IEntity[] $entities The current collection of related entities associated with the main entity.
+     * @template TEntityRemove of IEntity
+     *
+     * @param TEntityRemove[] $entities The current collection of related entities associated with the main entity.
      * @param array<int, EntityId|IEntity> $inputs An array representing the desired state of the collection.
      *                                           Each element should be either an `EntityId` DTO (containing just the UUID)
      *                                           or an actual `IEntity` instance.
@@ -177,7 +179,7 @@ abstract class BaseEntityService
      *                                                It receives the `UuidInterface` of the entity to add.
      *                                                The callback implementation is responsible for finding the entity by this ID
      *                                                and associating it with the main entity (e.g., `$mainEntity->addRelated($foundEntity)`).
-     * @param callable(IEntity): void $removeEntity A callback function executed for each entity that needs to be removed.
+     * @param callable(TEntityRemove): void $removeEntity A callback function executed for each entity that needs to be removed.
      *                                             It receives the actual `IEntity` instance from the current collection that should be removed.
      *                                             The callback implementation is responsible for dissociating the entity
      *                                             (e.g., `$mainEntity->removeRelated($entityToRemove)`).
@@ -188,7 +190,7 @@ abstract class BaseEntityService
         callable $addEntity,
         callable $removeEntity,
     ): void {
-        /** @var array<string, IEntity> $entityMap */
+        /** @var array<string, TEntityRemove> $entityMap */
         $entityMap = [];
         foreach ($entities as $entity) {
             $entityMap[$entity->getId()->toString()] = $entity;
