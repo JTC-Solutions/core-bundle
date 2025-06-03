@@ -15,8 +15,11 @@ use Ramsey\Uuid\Uuid;
 class BaseCRUDEntityServiceTest extends TestCase
 {
     private MockObject|DummyRepository $repositoryMock;
+
     private MockObject|LoggerInterface $loggerMock;
+
     private MockObject|EntityManagerInterface $entityManagerMock;
+
     private DummyCRUDEntityService $service;
 
     protected function setUp(): void
@@ -42,20 +45,17 @@ class BaseCRUDEntityServiceTest extends TestCase
         // Arrange
         $requestBody = new DummyCreateRequest('test string', 123, 45.67);
         $context = ['log_message' => 'Creating entity with context'];
-        $expectedEntity = new DummyEntity(Uuid::uuid4(), 'test string', 123, 45.67);
 
         // The logger should be called with the context message
         $this->loggerMock->expects(self::once())
             ->method('info')
             ->with(
                 $context['log_message'],
-                self::callback(function (array $logContext) {
-                    return $logContext['operation'] === 'create'
+                self::callback(static fn (array $logContext) => $logContext['operation'] === 'create'
                         && isset($logContext['data'])
                         && $logContext['data']['string'] === 'test string'
                         && $logContext['data']['integer'] === 123
-                        && $logContext['data']['float'] === 45.67;
-                })
+                        && $logContext['data']['float'] === 45.67),
             );
 
         // The entity manager should persist and flush the entity
@@ -94,10 +94,8 @@ class BaseCRUDEntityServiceTest extends TestCase
             ->method('info')
             ->with(
                 $context['log_message'],
-                self::callback(function (array $logContext) use ($entityId) {
-                    return $logContext['operation'] === 'update'
-                        && $logContext['entity_id'] === $entityId->toString();
-                })
+                self::callback(static fn (array $logContext) => $logContext['operation'] === 'update'
+                        && $logContext['entity_id'] === $entityId->toString()),
             );
 
         // The entity manager should flush the changes
@@ -132,7 +130,7 @@ class BaseCRUDEntityServiceTest extends TestCase
             ->method('info')
             ->with(
                 $context['log_message'],
-                ['entity_id' => $entityId->toString()]
+                ['entity_id' => $entityId->toString()],
             );
 
         // The entity manager should remove and flush the entity
