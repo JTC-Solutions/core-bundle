@@ -55,6 +55,7 @@ class DummyControllerTest extends TestCase
             string: 'string',
             integer: 1,
             float: 1.1,
+            contextString: 'string',
         );
 
         $requestBody = new DummyCreateRequest(
@@ -158,6 +159,7 @@ class DummyControllerTest extends TestCase
             string: 'test string',
             integer: 123,
             float: 4.56,
+            contextString: 'test context',
         );
 
         $this->validatorMock->expects(self::once())

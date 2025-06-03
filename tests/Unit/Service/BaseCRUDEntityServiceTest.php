@@ -32,7 +32,6 @@ class BaseCRUDEntityServiceTest extends TestCase
 
         $this->service = new DummyCRUDEntityService(
             $this->repositoryMock,
-            $this->loggerMock,
             $this->entityManagerMock,
         );
 
@@ -44,19 +43,12 @@ class BaseCRUDEntityServiceTest extends TestCase
     {
         // Arrange
         $requestBody = new DummyCreateRequest('test string', 123, 45.67);
-        $context = ['log_message' => 'Creating entity with context'];
+        $context = [
+            'log_message' => 'Creating entity with context',
+            'contextString' => 'context value for create',
+        ];
 
-        // The logger should be called with the context message
-        $this->loggerMock->expects(self::once())
-            ->method('info')
-            ->with(
-                $context['log_message'],
-                self::callback(static fn (array $logContext) => $logContext['operation'] === 'create'
-                        && isset($logContext['data'])
-                        && $logContext['data']['string'] === 'test string'
-                        && $logContext['data']['integer'] === 123
-                        && $logContext['data']['float'] === 45.67),
-            );
+        // DummyCRUDEntityService doesn't use the logger, so we don't expect it to be called
 
         // The entity manager should persist and flush the entity
         $this->entityManagerMock->expects(self::once())
@@ -73,15 +65,19 @@ class BaseCRUDEntityServiceTest extends TestCase
         self::assertEquals('test string', $result->getString());
         self::assertEquals(123, $result->getInteger());
         self::assertEquals(45.67, $result->getFloat());
+        self::assertEquals('context value for create', $result->getContextString());
     }
 
     public function testHandleUpdatePassesContextToMapDataAndCallUpdate(): void
     {
         // Arrange
         $entityId = Uuid::uuid4();
-        $entity = new DummyEntity($entityId, 'old string', 456, 78.9);
+        $entity = new DummyEntity($entityId, 'old string', 456, 78.9, 'old context');
         $requestBody = new DummyCreateRequest('updated string', 789, 12.34);
-        $context = ['log_message' => 'Updating entity with context'];
+        $context = [
+            'log_message' => 'Updating entity with context',
+            'contextString' => 'context value for update',
+        ];
 
         // Configure repository to return the entity when findOneBy is called
         $this->repositoryMock->expects(self::once())
@@ -89,14 +85,7 @@ class BaseCRUDEntityServiceTest extends TestCase
             ->with(['id' => $entityId])
             ->willReturn($entity);
 
-        // The logger should be called with the context message
-        $this->loggerMock->expects(self::once())
-            ->method('info')
-            ->with(
-                $context['log_message'],
-                self::callback(static fn (array $logContext) => $logContext['operation'] === 'update'
-                        && $logContext['entity_id'] === $entityId->toString()),
-            );
+        // DummyCRUDEntityService doesn't use the logger, so we don't expect it to be called
 
         // The entity manager should flush the changes
         $this->entityManagerMock->expects(self::once())
@@ -110,14 +99,18 @@ class BaseCRUDEntityServiceTest extends TestCase
         self::assertEquals('updated string', $result->getString());
         self::assertEquals(789, $result->getInteger());
         self::assertEquals(12.34, $result->getFloat());
+        self::assertEquals('context value for update', $result->getContextString());
     }
 
     public function testHandleDeletePassesContextToDelete(): void
     {
         // Arrange
         $entityId = Uuid::uuid4();
-        $entity = new DummyEntity($entityId, 'test string', 123, 45.67);
-        $context = ['log_message' => 'Deleting entity with context'];
+        $entity = new DummyEntity($entityId, 'test string', 123, 45.67, 'context for delete');
+        $context = [
+            'log_message' => 'Deleting entity with context',
+            'contextString' => 'context value for delete',
+        ];
 
         // Configure repository to return the entity when findOneBy is called
         $this->repositoryMock->expects(self::once())
@@ -125,13 +118,7 @@ class BaseCRUDEntityServiceTest extends TestCase
             ->with(['id' => $entityId])
             ->willReturn($entity);
 
-        // The logger should be called with the context message
-        $this->loggerMock->expects(self::once())
-            ->method('info')
-            ->with(
-                $context['log_message'],
-                ['entity_id' => $entityId->toString()],
-            );
+        // DummyCRUDEntityService doesn't use the logger, so we don't expect it to be called
 
         // The entity manager should remove and flush the entity
         $this->entityManagerMock->expects(self::once())
@@ -148,10 +135,10 @@ class BaseCRUDEntityServiceTest extends TestCase
     {
         // Arrange
         $requestBody = new DummyCreateRequest('test string', 123, 45.67);
+        // Even without a log_message, we still need to provide contextString
+        $context = ['contextString' => 'default context for create'];
 
-        // The logger should not be called
-        $this->loggerMock->expects(self::never())
-            ->method('info');
+        // DummyCRUDEntityService doesn't use the logger, so we don't need to check if it's called
 
         // The entity manager should persist and flush the entity
         $this->entityManagerMock->expects(self::once())
@@ -161,21 +148,24 @@ class BaseCRUDEntityServiceTest extends TestCase
             ->method('flush');
 
         // Act
-        $result = $this->service->handleCreate($requestBody);
+        $result = $this->service->handleCreate($requestBody, $context);
 
         // Assert
         self::assertInstanceOf(DummyEntity::class, $result);
         self::assertEquals('test string', $result->getString());
         self::assertEquals(123, $result->getInteger());
         self::assertEquals(45.67, $result->getFloat());
+        self::assertEquals('default context for create', $result->getContextString());
     }
 
     public function testHandleUpdateWithoutContext(): void
     {
         // Arrange
         $entityId = Uuid::uuid4();
-        $entity = new DummyEntity($entityId, 'old string', 456, 78.9);
+        $entity = new DummyEntity($entityId, 'old string', 456, 78.9, 'old context for update');
         $requestBody = new DummyCreateRequest('updated string', 789, 12.34);
+        // Even without a log_message, we still need to provide contextString
+        $context = ['contextString' => 'default context for update'];
 
         // Configure repository to return the entity when findOneBy is called
         $this->repositoryMock->expects(self::once())
@@ -183,29 +173,30 @@ class BaseCRUDEntityServiceTest extends TestCase
             ->with(['id' => $entityId])
             ->willReturn($entity);
 
-        // The logger should not be called
-        $this->loggerMock->expects(self::never())
-            ->method('info');
+        // DummyCRUDEntityService doesn't use the logger, so we don't need to check if it's called
 
         // The entity manager should flush the changes
         $this->entityManagerMock->expects(self::once())
             ->method('flush');
 
         // Act
-        $result = $this->service->handleUpdate($entityId, $requestBody);
+        $result = $this->service->handleUpdate($entityId, $requestBody, $context);
 
         // Assert
         self::assertInstanceOf(DummyEntity::class, $result);
         self::assertEquals('updated string', $result->getString());
         self::assertEquals(789, $result->getInteger());
         self::assertEquals(12.34, $result->getFloat());
+        self::assertEquals('default context for update', $result->getContextString());
     }
 
     public function testHandleDeleteWithoutContext(): void
     {
         // Arrange
         $entityId = Uuid::uuid4();
-        $entity = new DummyEntity($entityId, 'test string', 123, 45.67);
+        $entity = new DummyEntity($entityId, 'test string', 123, 45.67, 'context for delete without log');
+        // Even without a log_message, we still need to provide contextString
+        $context = ['contextString' => 'default context for delete'];
 
         // Configure repository to return the entity when findOneBy is called
         $this->repositoryMock->expects(self::once())
@@ -213,9 +204,7 @@ class BaseCRUDEntityServiceTest extends TestCase
             ->with(['id' => $entityId])
             ->willReturn($entity);
 
-        // The logger should not be called
-        $this->loggerMock->expects(self::never())
-            ->method('info');
+        // DummyCRUDEntityService doesn't use the logger, so we don't need to check if it's called
 
         // The entity manager should remove and flush the entity
         $this->entityManagerMock->expects(self::once())
@@ -225,6 +214,6 @@ class BaseCRUDEntityServiceTest extends TestCase
             ->method('flush');
 
         // Act
-        $this->service->handleDelete($entityId);
+        $this->service->handleDelete($entityId, $context);
     }
 }
