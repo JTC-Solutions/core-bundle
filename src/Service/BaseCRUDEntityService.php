@@ -45,13 +45,14 @@ abstract class BaseCRUDEntityService extends BaseEntityService implements IEntit
      * which must be implemented by concrete subclasses.
      *
      * @param TRequestBody $requestBody The DTO containing data for the new entity.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return TEntity The newly created and persisted entity.
      * @see IEntityService::handleCreate() for expected exceptions and behavior.
      * @see BaseCRUDEntityService::mapDataAndCallCreate() for the required implementation logic.
      */
-    public function handleCreate(IEntityRequestBody $requestBody): IEntity
+    public function handleCreate(IEntityRequestBody $requestBody, array $context = []): IEntity
     {
-        return $this->mapDataAndCallCreate($requestBody);
+        return $this->mapDataAndCallCreate($requestBody, $context);
     }
 
     /**
@@ -61,13 +62,14 @@ abstract class BaseCRUDEntityService extends BaseEntityService implements IEntit
      *
      * @param TEntity|UuidInterface $entityId Either the entity instance or its UUID.
      * @param TRequestBody $requestBody The DTO containing the updated data.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return TEntity The updated and persisted entity.
      * @see IEntityService::handleUpdate() for expected exceptions and behavior.
      * @see BaseCRUDEntityService::mapDataAndCallUpdate() for the required implementation logic.
      */
-    public function handleUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody): IEntity
+    public function handleUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody, array $context = []): IEntity
     {
-        return $this->mapDataAndCallUpdate($entityId, $requestBody);
+        return $this->mapDataAndCallUpdate($entityId, $requestBody, $context);
     }
 
     /**
@@ -76,12 +78,13 @@ abstract class BaseCRUDEntityService extends BaseEntityService implements IEntit
      * which must be implemented by concrete subclasses.
      *
      * @param TEntity|UuidInterface $entityId Either the entity instance or its UUID.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @see IEntityService::handleDelete() for expected exceptions and behavior.
      * @see BaseCRUDEntityService::delete() for the required implementation logic.
      */
-    public function handleDelete(UuidInterface|IEntity $entityId): void
+    public function handleDelete(UuidInterface|IEntity $entityId, array $context = []): void
     {
-        $this->delete($entityId);
+        $this->delete($entityId, $context);
     }
 
     /**
@@ -90,10 +93,11 @@ abstract class BaseCRUDEntityService extends BaseEntityService implements IEntit
      * performing necessary checks, and executing the delete operation (hard or soft).
      *
      * @param TEntity|UuidInterface $id The entity instance or UUID to delete.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @throws EntityNotFoundException If deletion requires the entity to exist and it's not found by UUID.
      * @throws \Exception Implementations might throw exceptions for constraint violations or other errors.
      */
-    abstract protected function delete(UuidInterface|IEntity $id): void;
+    abstract protected function delete(UuidInterface|IEntity $id, array $context = []): void;
 
     /**
      * Abstract method defining the bridge between the generic `handleCreate` and the concrete service's creation logic.
@@ -106,10 +110,11 @@ abstract class BaseCRUDEntityService extends BaseEntityService implements IEntit
      *    persists the entity via `$this->repository` or EntityManager, and returns the new `TEntity`.
      *
      * @param TRequestBody $requestBody The input DTO conforming to `IEntityRequestBody`. The implementation will cast or access specific properties from it.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return TEntity The newly created and persisted entity.
      * @throws Exception Implementations can throw various exceptions (Validation, Persistence, Business Logic related).
      */
-    abstract protected function mapDataAndCallCreate(IEntityRequestBody $requestBody): IEntity;
+    abstract protected function mapDataAndCallCreate(IEntityRequestBody $requestBody, array $context = []): IEntity;
 
     /**
      * Abstract method defining the bridge between the generic `handleUpdate` and the concrete service's update logic.
@@ -125,9 +130,10 @@ abstract class BaseCRUDEntityService extends BaseEntityService implements IEntit
      *
      * @param TEntity|UuidInterface $entityId The entity instance or UUID to update.
      * @param TRequestBody $requestBody The input DTO conforming to `IEntityRequestBody`, containing the data for the update.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return TEntity The updated and persisted entity.
      * @throws EntityNotFoundException If the entity is not found when `$entityId` is a UUID and the internal update logic requires fetching it.
      * @throws Exception Implementations can throw various exceptions (Validation, Persistence, Business Logic related).
      */
-    abstract protected function mapDataAndCallUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody): IEntity;
+    abstract protected function mapDataAndCallUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody, array $context = []): IEntity;
 }

@@ -40,12 +40,13 @@ interface IEntityService
      * 5. Return the newly created and persisted entity.
      *
      * @param TRequestBody $requestBody The data transfer object containing the necessary information to create the entity.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return TEntity The newly created entity instance, typically after being persisted.
      * @throws EntityAlreadyExistsException If an entity with conflicting unique constraints already exists.
      * @throws NestedEntityNotFoundException If a related entity referenced in the request body does not exist.
      * @throws Exception For other potential infrastructure or business logic errors during creation.
      */
-    public function handleCreate(IEntityRequestBody $requestBody): IEntity;
+    public function handleCreate(IEntityRequestBody $requestBody, array $context = []): IEntity;
 
     /**
      * Handles the update of an existing entity identified by its UUID, using the provided request data.
@@ -61,13 +62,14 @@ interface IEntityService
      * @param UuidInterface|TEntity $entityId Either the UUID of the entity to update or the entity instance itself.
      *                                        Using the instance can sometimes avoid an extra fetch if already loaded.
      * @param TRequestBody $requestBody The data transfer object containing the updated information for the entity.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return TEntity The updated entity instance, typically after changes have been persisted.
      * @throws EntityNotFoundException If the entity identified by `$entityId` cannot be found.
      * @throws EntityAlreadyExistsException If the update would violate unique constraints (conflicting with another entity).
      * @throws NestedEntityNotFoundException If a related entity referenced in the request body does not exist.
      * @throws Exception For other potential infrastructure or business logic errors during update.
      */
-    public function handleUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody): IEntity;
+    public function handleUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody, array $context = []): IEntity;
 
     /**
      * Handles the deletion of an existing entity identified by its UUID or instance.
@@ -78,8 +80,9 @@ interface IEntityService
      * 3. Remove the entity from the persistence layer (either hard delete or soft delete, depending on implementation).
      *
      * @param TEntity|UuidInterface $entityId Either the UUID of the entity to delete or the entity instance itself.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @throws EntityNotFoundException If deletion requires the entity to exist and it cannot be found by the provided UUID.
      * @throws Exception For other potential infrastructure or business logic errors during deletion.
      */
-    public function handleDelete(UuidInterface|IEntity $entityId): void;
+    public function handleDelete(UuidInterface|IEntity $entityId, array $context = []): void;
 }

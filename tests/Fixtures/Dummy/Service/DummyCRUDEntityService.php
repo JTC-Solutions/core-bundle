@@ -68,8 +68,9 @@ class DummyCRUDEntityService extends BaseCRUDEntityService
 
     /**
      * @param DummyEntity|UuidInterface $id
+     * @param array<string, mixed> $context
      */
-    protected function delete(UuidInterface|IEntity $id): void
+    protected function delete(UuidInterface|IEntity $id, array $context = []): void
     {
         if ($id instanceof DummyEntity) {
             $id = $id->getId();
@@ -77,12 +78,28 @@ class DummyCRUDEntityService extends BaseCRUDEntityService
 
         $entity = $this->ensureEntityExists(['id' => $id]);
 
+        // Log context information if provided
+        if (isset($context['log_message'])) {
+            $this->logger->info($context['log_message'], ['entity_id' => $id->toString()]);
+        }
+
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
 
-    protected function mapDataAndCallUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody): IEntity
+    /**
+     * @param array<string, mixed> $context
+     */
+    protected function mapDataAndCallUpdate(UuidInterface|IEntity $entityId, IEntityRequestBody $requestBody, array $context = []): IEntity
     {
+        // Log context information if provided
+        if (isset($context['log_message'])) {
+            $this->logger->info($context['log_message'], [
+                'entity_id' => $entityId instanceof IEntity ? $entityId->getId()->toString() : $entityId->toString(),
+                'operation' => 'update',
+            ]);
+        }
+
         return $this->update(
             id: $entityId,
             string: $requestBody->string,
@@ -91,8 +108,23 @@ class DummyCRUDEntityService extends BaseCRUDEntityService
         );
     }
 
-    protected function mapDataAndCallCreate(IEntityRequestBody $requestBody): IEntity
+    /**
+     * @param array<string, mixed> $context
+     */
+    protected function mapDataAndCallCreate(IEntityRequestBody $requestBody, array $context = []): IEntity
     {
+        // Log context information if provided
+        if (isset($context['log_message'])) {
+            $this->logger->info($context['log_message'], [
+                'operation' => 'create',
+                'data' => [
+                    'string' => $requestBody->string,
+                    'integer' => $requestBody->integer,
+                    'float' => $requestBody->float,
+                ],
+            ]);
+        }
+
         return $this->create(
             string: $requestBody->string,
             integer: $requestBody->integer,
