@@ -83,6 +83,7 @@ abstract class BaseEntityCRUDController extends BaseController
      * @param UuidInterface $id The UUID of the entity to update.
      * @param TRequestBody $requestBody The DTO containing updated entity data.
      * @param string[] $serializerGroups Serialization groups to use for the response.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return JsonResponse A JSON response containing the updated entity on success (HTTP 200)
      *                     or validation errors (HTTP 400).
      * @throws EntityNotFoundException If the entity with the given ID is not found.
@@ -93,13 +94,14 @@ abstract class BaseEntityCRUDController extends BaseController
         UuidInterface $id,
         IEntityRequestBody $requestBody,
         array $serializerGroups = [],
+        array $context = [],
     ): JsonResponse {
         $result = $this->validate($requestBody);
         if ($result !== null) {
             return $result;
         }
 
-        $entity = $this->service->handleUpdate($id, $requestBody);
+        $entity = $this->service->handleUpdate($id, $requestBody, $context);
 
         return $this->json($entity, Response::HTTP_OK, [], ['groups' => $serializerGroups]);
     }
@@ -110,13 +112,14 @@ abstract class BaseEntityCRUDController extends BaseController
      *
      * @param UuidInterface|TEntity $id The UUID or the Entity instance to delete.
      *        Using the Entity instance might be relevant if it was already fetched (e.g., by EntityParamResolver).
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return JsonResponse An empty JSON response with HTTP 204 (No Content) on success.
      * @throws EntityNotFoundException If the entity with the given ID is not found.
      * @throws Exception For other potential service layer exceptions during deletion.
      */
-    protected function handleDelete(UuidInterface|IEntity $id): JsonResponse
+    protected function handleDelete(UuidInterface|IEntity $id, array $context = []): JsonResponse
     {
-        $this->service->handleDelete($id);
+        $this->service->handleDelete($id, $context);
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
@@ -128,6 +131,7 @@ abstract class BaseEntityCRUDController extends BaseController
      *
      * @param TRequestBody $requestBody The DTO containing the new entity data.
      * @param string[] $serializerGroups Serialization groups to use for the response.
+     * @param array<string, mixed> $context Additional context data for the operation.
      * @return JsonResponse A JSON response containing the newly created entity (HTTP 201)
      *                     or validation errors (HTTP 400).
      * @throws EntityAlreadyExistsException If the new entity violates a unique constraint.
@@ -136,6 +140,7 @@ abstract class BaseEntityCRUDController extends BaseController
     protected function handleCreate(
         IEntityRequestBody $requestBody,
         array $serializerGroups = [],
+        array $context = [],
     ): JsonResponse {
         $result = $this->validate($requestBody);
         if ($result !== null) {
@@ -143,7 +148,7 @@ abstract class BaseEntityCRUDController extends BaseController
         }
 
         /** @var TEntity $entity */
-        $entity = $this->service->handleCreate($requestBody);
+        $entity = $this->service->handleCreate($requestBody, $context);
 
         return $this->json($entity, Response::HTTP_CREATED, [], ['groups' => $serializerGroups]);
     }
