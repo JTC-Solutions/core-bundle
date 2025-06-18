@@ -1,0 +1,12 @@
+<?php
+
+namespace JtcSolutions\Core\Enum;
+
+enum HistoryActionTypeEnum: string
+{
+    case CREATE = 'created';
+    case UPDATE = 'update';
+    case CHANGE_RELATION = 'change-relation';
+    case REMOVED_FROM_COLLECTION = 'removed';
+    case ADDED_TO_COLLECTION = 'added';
+}
