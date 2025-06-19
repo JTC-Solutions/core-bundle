@@ -73,7 +73,7 @@ abstract class BaseHistoryFactory implements IHistoryFactory
     /**
      * Creates history entry from entity update event.
      *
-     * @param array<int, $createdBy array{
+     * @param array<int, array{
      *     field: non-empty-string,
      *     oldValue: mixed,
      *     newValue: mixed,
@@ -90,9 +90,11 @@ abstract class BaseHistoryFactory implements IHistoryFactory
         $changeDtos = [];
         foreach ($changes as $change) {
             if (isset($change['enumName'])) {
+                /** @var array{field: non-empty-string, oldValue: mixed, newValue: mixed, actionType: HistoryActionTypeEnum, relatedEntity?: string|null, enumName: non-empty-string} $change */
                 $changeDtos[] = $this->createEnumChangeDto($change, $change['enumName']);
                 continue;
             }
+            /** @var array{field: non-empty-string, oldValue: mixed, newValue: mixed, actionType: HistoryActionTypeEnum, relatedEntity?: string|null} $change */
             $changeDtos[] = $this->createChangeDto($change);
         }
 

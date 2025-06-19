@@ -18,7 +18,7 @@ interface IHistoryFactory
     ): IHistory;
 
     /**
-     * @param array<int, $createdBy array{
+     * @param array<int, array{
      *     field: non-empty-string,
      *     oldValue: mixed,
      *     newValue: mixed,
