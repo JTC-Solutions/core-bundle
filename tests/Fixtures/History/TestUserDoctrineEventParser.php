@@ -39,6 +39,11 @@ class TestUserDoctrineEventParser extends BaseDoctrineEventParser
         return parent::isAnyValueEntityReference($values);
     }
 
+    public function getDefinedPivotEntities(IHistoryTrackable $entity): array
+    {
+        return [];
+    }
+
     /**
      * @return array<string, Collection<int, \JtcSolutions\Core\Entity\IEntity>>
      */

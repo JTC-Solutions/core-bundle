@@ -2,6 +2,7 @@
 
 namespace JtcSolutions\Core\Tests\Fixtures\History;
 
+use DateTimeImmutable;
 use JtcSolutions\Core\Dto\HistoryChange;
 use JtcSolutions\Core\Entity\IHistory;
 use JtcSolutions\Core\Enum\HistorySeverityEnum;
@@ -79,5 +80,10 @@ class TestUserHistory implements IHistory
     public function getUser(): TestUser
     {
         return $this->user;
+    }
+
+    public function getCreatedAt(): DateTimeImmutable
+    {
+        return new DateTimeImmutable();
     }
 }

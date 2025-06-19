@@ -5,9 +5,11 @@ namespace JtcSolutions\Core\Parser;
 use DateTimeInterface;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\PersistentCollection;
+use InvalidArgumentException;
 use JtcSolutions\Core\Entity\IEntity;
 use JtcSolutions\Core\Entity\IHistoryTrackable;
 use JtcSolutions\Core\Entity\ILabelable;
+use JtcSolutions\Core\Entity\IPivotHistoryTrackable;
 use JtcSolutions\Core\Enum\HistoryActionTypeEnum;
 use JtcSolutions\Helpers\Helper\FQCNHelper;
 
@@ -164,6 +166,164 @@ abstract class BaseDoctrineEventParser
             'id' => $entity->getId()->toString(),
             'label' => $label,
         ];
+    }
+
+    /**
+     * Parses pivot entity changes into history format.
+     * Extracts both the target entity reference and additional pivot data.
+     *
+     * @param array<non-empty-string, array{mixed, mixed}>|null $changeSet Doctrine changeSet for updates, null for create/delete
+     * @return array{
+     *     field: non-empty-string,
+     *     oldValue: mixed,
+     *     newValue: mixed,
+     *     relatedEntity: non-empty-string,
+     *     actionType: HistoryActionTypeEnum,
+     *     pivotEntity: non-empty-string
+     * }
+     */
+    public function parsePivotEntityChange(
+        IPivotHistoryTrackable $pivotEntity,
+        HistoryActionTypeEnum $actionType,
+        ?array $changeSet = null,
+    ): array {
+        $relationshipType = $pivotEntity->getRelationshipType();
+        $targetEntity = $pivotEntity->getHistoryTarget();
+        $pivotData = $pivotEntity->getPivotData();
+
+        $targetReference = $this->parseEntityReference($targetEntity);
+        if ($targetReference !== null && $pivotData !== []) {
+            $targetReference['pivotData'] = $pivotData;
+        }
+
+        $relatedEntityType = FQCNHelper::transformFQCNToShortClassName($targetEntity::class);
+        assert($relatedEntityType !== '');
+
+        $pivotEntityType = FQCNHelper::transformFQCNToShortClassName($pivotEntity::class);
+        assert($pivotEntityType !== '');
+
+        return match ($actionType) {
+            HistoryActionTypeEnum::PIVOT_CREATED => [
+                'field' => $relationshipType,
+                'oldValue' => null,
+                'newValue' => $targetReference,
+                'relatedEntity' => $relatedEntityType,
+                'actionType' => $actionType,
+                'pivotEntity' => $pivotEntityType,
+            ],
+            HistoryActionTypeEnum::PIVOT_DELETED => [
+                'field' => $relationshipType,
+                'oldValue' => $targetReference,
+                'newValue' => null,
+                'relatedEntity' => $relatedEntityType,
+                'actionType' => $actionType,
+                'pivotEntity' => $pivotEntityType,
+            ],
+            HistoryActionTypeEnum::PIVOT_UPDATED => $this->parsePivotUpdateChange(
+                $pivotEntity,
+                $changeSet ?? [],
+                $relationshipType,
+                $relatedEntityType,
+                $pivotEntityType,
+            ),
+            default => throw new InvalidArgumentException('Invalid action type for pivot entity: ' . $actionType->value),
+        };
+    }
+
+    /**
+     * Parses pivot entity changes from the target entity's perspective.
+     * This creates the "reverse" history entry for the other side of the relationship.
+     *
+     * For example, if User gets Role:
+     * - Owner perspective: "User got role Admin"
+     * - Target perspective: "User John was added among admins"
+     *
+     * @param array<non-empty-string, array{mixed, mixed}>|null $changeSet
+     * @return array{
+     *     field: non-empty-string,
+     *     oldValue: mixed,
+     *     newValue: mixed,
+     *     relatedEntity: non-empty-string,
+     *     actionType: HistoryActionTypeEnum,
+     *     pivotEntity: non-empty-string
+     * }
+     */
+    public function parsePivotEntityChangeForTarget(
+        IPivotHistoryTrackable $pivotEntity,
+        HistoryActionTypeEnum $actionType,
+        ?array $changeSet = null,
+    ): array {
+        $relationshipType = $pivotEntity->getRelationshipType();
+        $ownerEntity = $pivotEntity->getHistoryOwner();
+        $pivotData = $pivotEntity->getPivotData();
+
+        $ownerReference = $this->parseEntityReference($ownerEntity);
+        if ($ownerReference !== null && $pivotData !== []) {
+            $ownerReference['pivotData'] = $pivotData;
+        }
+
+        $relatedEntityType = FQCNHelper::transformFQCNToShortClassName($ownerEntity::class);
+        assert($relatedEntityType !== '');
+
+        $pivotEntityType = FQCNHelper::transformFQCNToShortClassName($pivotEntity::class);
+        assert($pivotEntityType !== '');
+
+        // Create reverse relationship field names based on the original relationship type
+        $reverseRelationshipType = $this->inferReverseRelationshipType($relationshipType);
+
+        return match ($actionType) {
+            HistoryActionTypeEnum::PIVOT_CREATED => [
+                'field' => $reverseRelationshipType,
+                'oldValue' => null,
+                'newValue' => $ownerReference,
+                'relatedEntity' => $relatedEntityType,
+                'actionType' => $actionType,
+                'pivotEntity' => $pivotEntityType,
+            ],
+            HistoryActionTypeEnum::PIVOT_DELETED => [
+                'field' => $reverseRelationshipType,
+                'oldValue' => $ownerReference,
+                'newValue' => null,
+                'relatedEntity' => $relatedEntityType,
+                'actionType' => $actionType,
+                'pivotEntity' => $pivotEntityType,
+            ],
+            HistoryActionTypeEnum::PIVOT_UPDATED => $this->parsePivotUpdateChangeForTarget(
+                $pivotEntity,
+                $changeSet ?? [],
+                $reverseRelationshipType,
+                $relatedEntityType,
+                $pivotEntityType,
+            ),
+            default => throw new InvalidArgumentException('Invalid action type for pivot entity: ' . $actionType->value),
+        };
+    }
+
+    /**
+     * Parses pivot entity reference data including additional pivot data.
+     * Similar to parseEntityReference but includes pivot-specific information.
+     *
+     * @return array{
+     *     id: non-empty-string,
+     *     label: string|null,
+     *     pivotData?: array<string, mixed>
+     * }|null
+     */
+    public function parsePivotEntityReference(IPivotHistoryTrackable $pivotEntity): ?array
+    {
+        $targetEntity = $pivotEntity->getHistoryTarget();
+        $baseReference = $this->parseEntityReference($targetEntity);
+
+        if ($baseReference === null) {
+            return null;
+        }
+
+        $pivotData = $pivotEntity->getPivotData();
+        if ($pivotData !== []) {
+            $baseReference['pivotData'] = $pivotData;
+        }
+
+        return $baseReference;
     }
 
     /**
@@ -379,4 +539,161 @@ abstract class BaseDoctrineEventParser
      * @return array<string, class-string> Map of field names to enum class names
      */
     abstract protected function getDefinedEnums(): array;
+
+    /**
+     * Returns pivot entity class names that should be tracked for this entity.
+     * Must be implemented by concrete parsers to define which pivot entities to monitor.
+     *
+     * Only pivot entities implementing IPivotHistoryTrackable will be tracked.
+     * The relationship name should match the field used in history entries.
+     *
+     * Example: ['roles' => UserRole::class, 'projects' => UserProject::class]
+     *
+     * @return array<string, class-string<IPivotHistoryTrackable>> Map of relationship names to pivot entity classes
+     */
+    abstract protected function getDefinedPivotEntities(IHistoryTrackable $entity): array;
+
+    /**
+     * Handles pivot entity update changes by comparing old and new pivot data.
+     *
+     * @param array<non-empty-string, array{mixed, mixed}> $changeSet
+     * @param non-empty-string $relationshipType
+     * @param non-empty-string $relatedEntityType
+     * @param non-empty-string $pivotEntityType
+     * @return array{
+     *     field: non-empty-string,
+     *     oldValue: mixed,
+     *     newValue: mixed,
+     *     relatedEntity: non-empty-string,
+     *     actionType: HistoryActionTypeEnum,
+     *     pivotEntity: non-empty-string
+     * }
+     */
+    private function parsePivotUpdateChange(
+        IPivotHistoryTrackable $pivotEntity,
+        array $changeSet,
+        string $relationshipType,
+        string $relatedEntityType,
+        string $pivotEntityType,
+    ): array {
+        // For pivot updates, we focus on the changed pivot data fields
+        // The target entity reference typically doesn't change in updates
+        $targetReference = $this->parseEntityReference($pivotEntity->getHistoryTarget());
+        $pivotData = $pivotEntity->getPivotData();
+
+        // Extract the specific field that changed from the changeSet
+        $changedFields = [];
+        foreach ($changeSet as $field => [$oldValue, $newValue]) {
+            if (! $this->areValuesTheSame($oldValue, $newValue)) {
+                $changedFields[$field] = [
+                    'from' => $this->parseScalarValue($oldValue instanceof DateTimeInterface || is_scalar($oldValue) || $oldValue === null ? $oldValue : 'unknown'),
+                    'to' => $this->parseScalarValue($newValue instanceof DateTimeInterface || is_scalar($newValue) || $newValue === null ? $newValue : 'unknown'),
+                ];
+            }
+        }
+
+        $newValue = $targetReference;
+        if ($newValue !== null && $pivotData !== []) {
+            $newValue['pivotData'] = $pivotData;
+        }
+
+        return [
+            'field' => $relationshipType,
+            'oldValue' => $changedFields,
+            'newValue' => $newValue,
+            'relatedEntity' => $relatedEntityType,
+            'actionType' => HistoryActionTypeEnum::PIVOT_UPDATED,
+            'pivotEntity' => $pivotEntityType,
+        ];
+    }
+
+    /**
+     * Parses pivot entity update changes from the target entity's perspective.
+     * Similar to parsePivotUpdateChange but with swapped perspective.
+     *
+     * @param array<non-empty-string, array{mixed, mixed}> $changeSet
+     * @return array{
+     *     field: non-empty-string,
+     *     oldValue: mixed,
+     *     newValue: mixed,
+     *     relatedEntity: non-empty-string,
+     *     actionType: HistoryActionTypeEnum,
+     *     pivotEntity: non-empty-string
+     * }
+     */
+    private function parsePivotUpdateChangeForTarget(
+        IPivotHistoryTrackable $pivotEntity,
+        array $changeSet,
+        string $relationshipType,
+        string $relatedEntityType,
+        string $pivotEntityType,
+    ): array {
+        assert($relationshipType !== '');
+        assert($relatedEntityType !== '');
+        assert($pivotEntityType !== '');
+
+        // For target perspective, we show what changed in the pivot data
+        // but frame it from the target's viewpoint
+        $changedFields = [];
+
+        foreach ($changeSet as $field => $changes) {
+            [$oldValue, $currentNewValue] = $changes;
+            $changedFields[$field] = [
+                'old' => $oldValue,
+                'new' => $currentNewValue,
+            ];
+        }
+
+        $ownerEntity = $pivotEntity->getHistoryOwner();
+        $ownerReference = $this->parseEntityReference($ownerEntity);
+
+        return [
+            'field' => $relationshipType,
+            'oldValue' => $changedFields,
+            'newValue' => $ownerReference, // Reference to the owner entity from target's perspective
+            'relatedEntity' => $relatedEntityType,
+            'actionType' => HistoryActionTypeEnum::PIVOT_UPDATED,
+            'pivotEntity' => $pivotEntityType,
+        ];
+    }
+
+    /**
+     * Infers the reverse relationship type name for target entity perspective.
+     *
+     * Examples:
+     * - "role" -> "user" (user gets role, role gets user)
+     * - "permission" -> "user"
+     * - "tag" -> "item"
+     *
+     * @param non-empty-string $relationshipType
+     * @return non-empty-string
+     */
+    private function inferReverseRelationshipType(string $relationshipType): string
+    {
+        // Common relationship type mappings
+        $mappings = [
+            'role' => 'user',
+            'permission' => 'user',
+            'user' => 'role',
+            'tag' => 'item',
+            'item' => 'tag',
+            'group' => 'member',
+            'member' => 'group',
+            'category' => 'item',
+        ];
+
+        // Check if we have a predefined mapping
+        if (isset($mappings[$relationshipType])) {
+            return $mappings[$relationshipType];
+        }
+
+        // Try to infer from common patterns
+        if (str_ends_with($relationshipType, 's')) {
+            // "roles" -> "user", "permissions" -> "user"
+            return 'user';
+        }
+
+        // Default fallback - just add "entity" suffix
+        return $relationshipType . '_entity';
+    }
 }

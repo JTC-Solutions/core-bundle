@@ -33,4 +33,12 @@ class TestDoctrineEventParser extends BaseDoctrineEventParser
             'status' => TestStatusEnum::class,
         ];
     }
+
+    /**
+     * @return array<string, class-string<\JtcSolutions\Core\Entity\IPivotHistoryTrackable>>
+     */
+    protected function getDefinedPivotEntities(IHistoryTrackable $entity): array
+    {
+        return [];
+    }
 }

@@ -42,6 +42,11 @@ class TestHistoryTrackableEntity implements IHistoryTrackable, ILabelable
     private Collection $items;
 
     /**
+     * @var Collection<int, TestRelatedEntity>
+     */
+    private Collection $relatedEntities;
+
+    /**
      * @var array<string, mixed>
      */
     private array $metadata;
@@ -50,6 +55,7 @@ class TestHistoryTrackableEntity implements IHistoryTrackable, ILabelable
     {
         $this->id = Uuid::uuid4();
         $this->items = new ArrayCollection();
+        $this->relatedEntities = new ArrayCollection();
         $this->metadata = [];
         $this->isActive = true;
         $this->quantity = 1;
@@ -163,6 +169,15 @@ class TestHistoryTrackableEntity implements IHistoryTrackable, ILabelable
         return $this->items;
     }
 
+    /**
+     * @param Collection<int, TestCollectionEntity> $items
+     */
+    public function setItems(Collection $items): self
+    {
+        $this->items = $items;
+        return $this;
+    }
+
     public function addItem(TestCollectionEntity $item): self
     {
         if (! $this->items->contains($item)) {
@@ -202,5 +217,22 @@ class TestHistoryTrackableEntity implements IHistoryTrackable, ILabelable
     public function getHistoryEntityFQCN(): string
     {
         return TestHistory::class;
+    }
+
+    /**
+     * @return Collection<int, TestRelatedEntity>
+     */
+    public function getRelatedEntities(): Collection
+    {
+        return $this->relatedEntities;
+    }
+
+    /**
+     * @param Collection<int, TestRelatedEntity> $relatedEntities
+     */
+    public function setRelatedEntities(Collection $relatedEntities): self
+    {
+        $this->relatedEntities = $relatedEntities;
+        return $this;
     }
 }

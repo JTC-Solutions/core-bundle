@@ -7,7 +7,7 @@ namespace JtcSolutions\Core\Dto;
  * Contains structured information about what field changed, its old/new values,
  * and metadata for translation and display purposes.
  */
-final readonly class HistoryChange
+readonly class HistoryChange
 {
     /**
      * @param non-empty-string $field Field name that changed
