@@ -73,16 +73,14 @@ abstract class BaseHistoryFactory implements IHistoryFactory
     /**
      * Creates history entry from the entity update event.
      *
-     * @param UserInterface|null $createdBy
-     * @param IHistoryTrackable $entity
      * @param array<int, array{
      *     field: non-empty-string,
      *     oldValue: mixed,
      *     newValue: mixed,
      *     actionType: HistoryActionTypeEnum,
      *     relatedEntity?: string|null,
-     *     enumName?: non-empty-string }> $changes
-     * @return IHistory
+     *     enumName?: non-empty-string
+     * }> $changes
      */
     public function createFromUpdate(
         ?UserInterface $createdBy,
