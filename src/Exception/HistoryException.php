@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types = 1);
 
 namespace JtcSolutions\Core\Exception;
 
@@ -28,10 +28,12 @@ class HistoryException extends LogicException
         return new self("Repository for entity {$entity} not found, maybe you forgot to add it to IHistoryTrackableRepository?");
     }
 
-    /** @param class-string $entityName */
+    /**
+     * @param class-string $entityName
+     */
     public static function listenerReceivedEntityWithoutEntityInterface(string $entityName): self
     {
-        return new self(sprintf("Listener received entity %s without %s interface.", $entityName, IHistoryTrackable::class));
+        return new self(sprintf('Listener received entity %s without %s interface.', $entityName, IHistoryTrackable::class));
     }
 
     public static function historyFactoryHasNotDefinedClassNameConstant(string $historyFactoryClassName): self
