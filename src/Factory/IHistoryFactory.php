@@ -4,6 +4,7 @@ namespace JtcSolutions\Core\Factory;
 
 use JtcSolutions\Core\Entity\IHistory;
 use JtcSolutions\Core\Entity\IHistoryTrackable;
+use JtcSolutions\Core\Enum\HistoryActionTypeEnum;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 interface IHistoryFactory
@@ -18,14 +19,16 @@ interface IHistoryFactory
     ): IHistory;
 
     /**
+     * @param UserInterface|null $createdBy
+     * @param IHistoryTrackable $entity
      * @param array<int, array{
      *     field: non-empty-string,
      *     oldValue: mixed,
      *     newValue: mixed,
-     *     actionType: \JtcSolutions\Core\Enum\HistoryActionTypeEnum,
+     *     actionType: HistoryActionTypeEnum,
      *     relatedEntity?: string|null,
-     *     enumName?: non-empty-string
-     * }> $changes
+     *     enumName?: non-empty-string }> $changes
+     * @return IHistory
      */
     public function createFromUpdate(
         ?UserInterface $createdBy,

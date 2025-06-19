@@ -35,7 +35,7 @@ abstract class BaseHistoryFactory implements IHistoryFactory
     abstract public function supports(IHistoryTrackable $entity): bool;
 
     /**
-     * Creates history entry from entity creation event.
+     * Creates history entry from an entity creation event.
      *
      * @param array{id: non-empty-string, label: string|null} $change
      */
@@ -71,16 +71,18 @@ abstract class BaseHistoryFactory implements IHistoryFactory
     }
 
     /**
-     * Creates history entry from entity update event.
+     * Creates history entry from the entity update event.
      *
+     * @param UserInterface|null $createdBy
+     * @param IHistoryTrackable $entity
      * @param array<int, array{
      *     field: non-empty-string,
      *     oldValue: mixed,
      *     newValue: mixed,
      *     actionType: HistoryActionTypeEnum,
      *     relatedEntity?: string|null,
-     *     enumName?: non-empty-string
-     * }> $changes
+     *     enumName?: non-empty-string }> $changes
+     * @return IHistory
      */
     public function createFromUpdate(
         ?UserInterface $createdBy,
