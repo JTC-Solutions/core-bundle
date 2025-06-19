@@ -8,7 +8,9 @@ use PhpCsFixer\Fixer\ArrayNotation\NoMultilineWhitespaceAroundDoubleArrowFixer;
 use PhpCsFixer\Fixer\Comment\CommentToPhpdocFixer;
 use PhpCsFixer\Fixer\DoctrineAnnotation\DoctrineAnnotationSpacesFixer;
 use PhpCsFixer\Fixer\FunctionNotation\NullableTypeDeclarationForDefaultNullValueFixer;
+use PhpCsFixer\Fixer\Phpdoc\PhpdocLineSpanFixer;
 use PhpCsFixer\Fixer\Import\NoUnusedImportsFixer;
+use Symplify\CodingStandard\Fixer\Commenting\ParamReturnAndVarTagMalformsFixer;
 use PhpCsFixer\Fixer\LanguageConstruct\DeclareEqualNormalizeFixer;
 use PhpCsFixer\Fixer\Operator\UnaryOperatorSpacesFixer;
 use PhpCsFixer\Fixer\Phpdoc\GeneralPhpdocAnnotationRemoveFixer;
@@ -96,6 +98,8 @@ return function (ECSConfig $ecsConfig): void {
 
     $ecsConfig->ruleWithConfiguration(PhpUnitTestCaseStaticMethodCallsFixer::class, ['call_type' => PhpUnitTestCaseStaticMethodCallsFixer::CALL_TYPE_SELF]);
     $skip[CommentToPhpdocFixer::class] = null;
+    $skip[PhpdocLineSpanFixer::class] = null;
+    $skip[ParamReturnAndVarTagMalformsFixer::class] = null;
 
     $ecsConfig->import(SetList::CLEAN_CODE);
 
