@@ -65,6 +65,7 @@ class EntityParamResolver implements ValueResolverInterface
         $repository = $this->repositoryLocator->locate($argumentType);
 
         $parameterName = $argument->getName();
+        /** @phpstan-ignore-next-line */
         $parameterValue = $request->get($parameterName);
 
         if ($parameterValue === null) {

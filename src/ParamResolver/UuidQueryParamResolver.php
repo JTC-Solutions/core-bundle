@@ -35,6 +35,7 @@ class UuidQueryParamResolver implements ValueResolverInterface
         }
 
         $parameterName = $argument->getName();
+        /** @phpstan-ignore-next-line */
         $parameterValue = $request->get($parameterName);
 
         if ($parameterValue !== null && ! is_string($parameterValue)) {
