@@ -35,3 +35,6 @@ services:
 
   JtcSolutions\Core\Factory\EntityLinkFactory:
     public: true
+
+  JtcSolutions\Core\Service\Serializer\UuidDenormalizer:
+    public: true
