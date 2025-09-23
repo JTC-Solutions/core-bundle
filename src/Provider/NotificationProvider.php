@@ -15,9 +15,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 /** @template TNotificationList of BaseNotificationList */
 class NotificationProvider
 {
-    protected readonly TranslatorInterface $translator;
+    protected TranslatorInterface $translator;
 
-    protected readonly EntityLinkFactory $entityLinkFactory;
+    protected EntityLinkFactory $entityLinkFactory;
 
     /**
      * @param INotificationListRepository<TNotificationList> $notificationListRepository
