@@ -18,12 +18,12 @@ abstract class BaseNotificationList implements IEntity
 {
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     #[Groups(['notification:list', 'notification:detail'])]
-    public ?DateTimeImmutable $readAt = null;
+    protected ?DateTimeImmutable $readAt = null;
 
     #[ORM\Id]
     #[ORM\Column(type: 'uuid')]
     #[Groups(['notification:list', 'notification:detail'])]
-    private UuidInterface $id;
+    protected UuidInterface $id;
 
     public function __construct(
         UuidInterface $id,
