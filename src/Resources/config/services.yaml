@@ -26,3 +26,12 @@ services:
     public: true
     tags:
       - { name: 'nelmio_api_doc.object_model.property_describer', priority: 100}
+
+  JtcSolutions\Core\Provider\NotificationProvider:
+    public: true
+
+  JtcSolutions\Core\Factory\PaginationFactory:
+    public: true
+
+  JtcSolutions\Core\Factory\EntityLinkFactory:
+    public: true
