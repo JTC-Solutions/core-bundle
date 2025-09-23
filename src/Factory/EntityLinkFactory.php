@@ -29,6 +29,7 @@ class EntityLinkFactory
     public function create(IEntityLinkable $linkable): EntityLink
     {
         $id = Uuid::fromString($linkable->getSubjectId());
+        /** @var non-empty-string $type */
         $type = FQCNHelper::transformFQCNToShortClassName($linkable->getSubjectFQCN());
 
         if (isset($this->notificationUrlList[$type])) {
