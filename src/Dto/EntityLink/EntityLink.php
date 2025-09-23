@@ -8,6 +8,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 /** This class is created from the IEntityLinkable interface and is used to generate a simple url link. */
 readonly class EntityLink
 {
+    /**
+     * @param non-empty-string $type
+     */
     public function __construct(
         #[Groups(['reference'])]
         public string $url,
