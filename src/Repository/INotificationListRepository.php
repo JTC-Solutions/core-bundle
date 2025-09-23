@@ -3,7 +3,6 @@
 namespace JtcSolutions\Core\Repository;
 
 use JtcSolutions\Core\Entity\IEntity;
-use JtcSolutions\Core\Entity\IUser;
 
 /** @template T of IEntity */
 interface INotificationListRepository
@@ -14,10 +13,10 @@ interface INotificationListRepository
      *
      * @return T[]
      */
-    public function findByUser(IUser $user, int $limit, int $offset): array;
+    public function findByUser(IEntity $user, int $limit, int $offset): array;
 
     /**
      * @return int<0, max>
      */
-    public function countByUser(IUser $user): int;
+    public function countByUser(IEntity $user): int;
 }

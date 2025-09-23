@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
  * Its child needs to extend it by providing user and notification properties.
  *
  * @template TNotification of BaseNotification
- * @template TUser of IUser
+ * @template TUser of IEntity
  */
 abstract class BaseNotificationList implements IEntity
 {
@@ -61,10 +61,10 @@ abstract class BaseNotificationList implements IEntity
     /**
      * @return TUser
      */
-    abstract public function getUser(): IUser;
+    abstract public function getUser(): IEntity;
 
     /**
      * @param TUser $user
      */
-    abstract public function setUser(IUser $user): void;
+    abstract public function setUser(IEntity $user): void;
 }

@@ -8,6 +8,12 @@ use JtcSolutions\Helpers\Helper\FQCNHelper;
 use JtcSolutions\Helpers\Helper\StringUtils;
 use Ramsey\Uuid\Uuid;
 
+/**
+ * Generates a {@link EntityLink} instance based on the provided {@link IEntityLinkable} object.
+ * Properties of this factory are:
+ *  - $notificationUrlList: A map of entity types for their corresponding notification URLs.
+ *  - $defaultUrlPattern: A default URL pattern for entities without specific URLs.
+ */
 class EntityLinkFactory
 {
     /**

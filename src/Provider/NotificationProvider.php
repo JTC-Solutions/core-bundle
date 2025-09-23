@@ -5,7 +5,7 @@ namespace JtcSolutions\Core\Provider;
 use JtcSolutions\Core\Dto\Notification\NotificationResponse;
 use JtcSolutions\Core\Dto\Notification\NotificationView;
 use JtcSolutions\Core\Entity\BaseNotificationList;
-use JtcSolutions\Core\Entity\IUser;
+use JtcSolutions\Core\Entity\IEntity;
 use JtcSolutions\Core\Factory\EntityLinkFactory;
 use JtcSolutions\Core\Factory\PaginationFactory;
 use JtcSolutions\Core\Repository\INotificationListRepository;
@@ -44,7 +44,7 @@ class NotificationProvider
      * @param int<0, max> $offset
      */
     public function provide(
-        IUser $currentUser,
+        IEntity $currentUser,
         int $limit,
         int $offset,
     ): NotificationResponse {
