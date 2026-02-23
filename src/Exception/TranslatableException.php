@@ -60,6 +60,16 @@ abstract class TranslatableException extends Exception
      */
     public function getTranslationParameters(): array
     {
-        return $this->translationParameters;
+        $wrapped = [];
+
+        foreach ($this->translationParameters as $key => $value) {
+            if (!str_starts_with($key, '%') || !str_ends_with($key, '%')) {
+                $key = "%{$key}%";
+            }
+
+            $wrapped[$key] = $value;
+        }
+
+        return $wrapped;
     }
 }
