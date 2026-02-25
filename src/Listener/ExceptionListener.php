@@ -201,8 +201,8 @@ final class ExceptionListener
         $messageKey = "custom.{$e->getTranslationCode()}.message";
 
         return new ErrorRequestJsonResponse(
-            title: $this->translator->trans($titleKey, [], $this->exceptionTranslationDomain),
-            message: $this->translator->trans($messageKey, [], $this->exceptionTranslationDomain),
+            title: $this->translator->trans($titleKey, $e->getTranslationParameters(), $this->exceptionTranslationDomain),
+            message: $this->translator->trans($messageKey, $e->getTranslationParameters(), $this->exceptionTranslationDomain),
             // errors: [],
             statusCode: $e->getStatusCode(),
         );
