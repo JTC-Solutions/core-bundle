@@ -63,7 +63,7 @@ abstract class TranslatableException extends Exception
         $wrapped = [];
 
         foreach ($this->translationParameters as $key => $value) {
-            if (!str_starts_with($key, '%') || !str_ends_with($key, '%')) {
+            if (! str_starts_with($key, '%') || ! str_ends_with($key, '%')) {
                 $key = "%{$key}%";
             }
 
